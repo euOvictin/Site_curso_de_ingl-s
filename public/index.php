@@ -1,3 +1,23 @@
+<?php
+/**
+ * Página Inicial - Your English
+ */
+require_once __DIR__ . '/../config.php';
+
+use App\Utils\Auth;
+
+try {
+    $auth = new Auth();
+    $isLoggedIn = $auth->isLoggedIn();
+    $user = $isLoggedIn ? $auth->getCurrentUser() : null;
+} catch (Exception $e) {
+    // Em caso de erro, definir valores padrão
+    $isLoggedIn = false;
+    $user = null;
+    error_log("Erro no index.php: " . $e->getMessage());
+}
+?>
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -19,6 +39,69 @@
 
   <!-- CSS principal -->
   <link rel="stylesheet" href="assets/css/style.css">
+  
+  <style>
+    /* Dropdown personalizado com info do usuário */
+    .dropdown-user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+      margin-bottom: 0.5rem;
+    }
+
+    .dropdown-header {
+      display: flex;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: var(--text-main);
+      font-size: 0.9rem;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-2), var(--accent-3));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--bg-dark);
+      font-size: 1.1rem;
+    }
+
+    .user-details {
+      flex: 1;
+    }
+
+    .user-name {
+      font-weight: 600;
+      color: var(--text-main);
+      font-size: 0.9rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .user-role {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: capitalize;
+    }
+
+    /* Melhorar o visual do dropdown quando não logado */
+    .profile-dropdown .dropdown-item:hover {
+      background: rgba(37, 99, 235, 0.1);
+      transform: translateX(2px);
+    }
+
+    /* Ícone diferente para usuário logado */
+    .profile-icon i.fa-user-check {
+      color: var(--accent-2);
+    }
+  </style>
 </head>
 <body>
   <!-- Navbar simples e responsiva -->
@@ -43,27 +126,78 @@
       <!-- Ícone de perfil redondo -->
 <div class="navbar-profile">
   <div class="profile-icon" id="profile-icon">
-    <i class="fa-solid fa-user"></i>
+    <?php if ($isLoggedIn): ?>
+      <i class="fa-solid fa-user-check"></i>
+    <?php else: ?>
+      <i class="fa-solid fa-user"></i>
+    <?php endif; ?>
   </div>
   <!-- Menu dropdown do perfil -->
   <div class="profile-dropdown" id="profile-dropdown">
-    <a href="#plans" class="dropdown-item">
-      <i class="fa-solid fa-credit-card"></i>
-      Meus Planos
-    </a>
-    <a href="#carousel" class="dropdown-item">
-      <i class="fa-solid fa-star"></i>
-      Avaliações
-    </a>
-    <a href="#" class="dropdown-item">
-      <i class="fa-solid fa-gear"></i>
-      Configurações
-    </a>
-    <div class="dropdown-divider"></div>
-    <a href="login.php" class="dropdown-item">
-      <i class="fa-solid fa-right-from-bracket"></i>
-      Login
-    </a>
+    <?php if ($isLoggedIn): ?>
+      <!-- Menu para usuário logado -->
+      <div class="dropdown-user-info">
+        <div class="user-avatar">
+          <i class="fa-solid fa-user"></i>
+        </div>
+        <div class="user-details">
+          <div class="user-name"><?php echo htmlspecialchars($user['name']); ?></div>
+          <div class="user-role"><?php echo ucfirst($user['role']); ?></div>
+        </div>
+      </div>
+      <div class="dropdown-divider"></div>
+      <a href="dashboard.php" class="dropdown-item">
+        <i class="fa-solid fa-chart-line"></i>
+        Dashboard
+      </a>
+      <a href="#plans" class="dropdown-item">
+        <i class="fa-solid fa-credit-card"></i>
+        Meus Planos
+      </a>
+      <?php if ($auth->isAdmin()): ?>
+        <a href="gerencia.php" class="dropdown-item">
+          <i class="fa-solid fa-cogs"></i>
+          Gerência
+        </a>
+      <?php endif; ?>
+      <a href="#" class="dropdown-item">
+        <i class="fa-solid fa-gear"></i>
+        Configurações
+      </a>
+      <div class="dropdown-divider"></div>
+      <a href="../api/logout.php" class="dropdown-item">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        Logout
+      </a>
+    <?php else: ?>
+      <!-- Menu para usuário não logado -->
+      <div class="dropdown-header">
+        <i class="fa-solid fa-hand-wave" style="color: var(--accent-2); margin-right: 0.5rem;"></i>
+        <span>Bem-vindo!</span>
+      </div>
+      <div class="dropdown-divider"></div>
+      <a href="#plans" class="dropdown-item">
+        <i class="fa-solid fa-credit-card"></i>
+        Ver Planos
+      </a>
+      <a href="#carousel" class="dropdown-item">
+        <i class="fa-solid fa-star"></i>
+        Avaliações
+      </a>
+      <a href="#benefits" class="dropdown-item">
+        <i class="fa-solid fa-info-circle"></i>
+        Sobre o Curso
+      </a>
+      <div class="dropdown-divider"></div>
+      <a href="login.php" class="dropdown-item">
+        <i class="fa-solid fa-right-to-bracket"></i>
+        Login
+      </a>
+      <a href="register.php" class="dropdown-item">
+        <i class="fa-solid fa-user-plus"></i>
+        Cadastrar
+      </a>
+    <?php endif; ?>
   </div>
 </div>
 
@@ -340,5 +474,49 @@
 
   <!-- Script principal -->
   <script src="assets/js/script.js"></script>
+  
+  <script>
+    // Dropdown do perfil
+    const profileIcon = document.getElementById('profile-icon');
+    const profileDropdown = document.getElementById('profile-dropdown');
+    const navbarToggle = document.getElementById('navbar-toggle');
+    const navbarLinks = document.getElementById('navbar-links');
+
+    if (profileIcon && profileDropdown) {
+      profileIcon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        profileDropdown.classList.toggle('open');
+      });
+    }
+
+    // Menu mobile
+    if (navbarToggle && navbarLinks) {
+      navbarToggle.addEventListener('click', () => {
+        navbarToggle.classList.toggle('active');
+        navbarLinks.classList.toggle('open');
+      });
+    }
+
+    // Fechar dropdown ao clicar fora
+    document.addEventListener('click', () => {
+      if (profileDropdown) {
+        profileDropdown.classList.remove('open');
+      }
+    });
+
+    // Smooth scroll para links internos
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+  </script>
 </body>
 </html>

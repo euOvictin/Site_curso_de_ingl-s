@@ -800,79 +800,140 @@ $pages = $pageModel->getAll();
         </div>
     </div>
 
-    <script src="./assets/js/script.js"></script>
     <script>
-        // Dropdown do perfil
-        const profileIcon = document.getElementById('profile-icon');
-        const profileDropdown = document.getElementById('profile-dropdown');
-        const navbarToggle = document.getElementById('navbar-toggle');
-        const navbarLinks = document.getElementById('navbar-links');
-
-        profileIcon.addEventListener('click', (e) => {
-            e.stopPropagation();
-            profileDropdown.classList.toggle('open');
+        // =============================
+        // ADMIN PANEL - JAVASCRIPT FUNCTIONS
+        // =============================
+        
+        // Aguardar carregamento completo da página
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Admin Panel JavaScript carregado');
+            
+            // Inicializar funcionalidades
+            initializeNavbar();
+            initializeTabs();
+            initializeModals();
+            initializeForms();
+            initializeFileUpload();
+            
+            console.log('✅ Todas as funcionalidades inicializadas');
         });
 
-        // Menu mobile
-        navbarToggle.addEventListener('click', () => {
-            navbarToggle.classList.toggle('active');
-            navbarLinks.classList.toggle('open');
-        });
+        // =============================
+        // NAVBAR E DROPDOWN
+        // =============================
+        function initializeNavbar() {
+            const profileIcon = document.getElementById('profile-icon');
+            const profileDropdown = document.getElementById('profile-dropdown');
+            const navbarToggle = document.getElementById('navbar-toggle');
+            const navbarLinks = document.getElementById('navbar-links');
 
-        // Fechar dropdown ao clicar fora
-        document.addEventListener('click', () => {
-            profileDropdown.classList.remove('open');
-        });
+            if (profileIcon && profileDropdown) {
+                profileIcon.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    profileDropdown.classList.toggle('open');
+                });
+            }
 
-        // Gerenciamento de Tabs
-        document.querySelectorAll('.tab-button').forEach(button => {
-            button.addEventListener('click', () => {
-                const tabId = button.dataset.tab;
-                
-                // Remove active de todos os botões e conteúdos
-                document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                
-                // Adiciona active ao botão e conteúdo clicado
-                button.classList.add('active');
-                document.getElementById(tabId).classList.add('active');
-                
-                // Carregar arquivos quando a aba de uploads for ativada
-                if (tabId === 'uploads') {
-                    loadFilesList();
+            if (navbarToggle && navbarLinks) {
+                navbarToggle.addEventListener('click', () => {
+                    navbarToggle.classList.toggle('active');
+                    navbarLinks.classList.toggle('open');
+                });
+            }
+
+            // Fechar dropdown ao clicar fora
+            document.addEventListener('click', () => {
+                if (profileDropdown) {
+                    profileDropdown.classList.remove('open');
                 }
             });
-        });
-
-        // Gerenciamento de Modais
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.add('active');
         }
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-            // Reset form
-            const form = document.querySelector(`#${modalId} form`);
-            if (form) {
-                form.reset();
-                // Reset hidden ID field
-                const idField = form.querySelector('input[type="hidden"]');
-                if (idField) idField.value = '';
+        // =============================
+        // SISTEMA DE TABS
+        // =============================
+        function initializeTabs() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabId = button.dataset.tab;
+                    
+                    // Remove active de todos
+                    tabButtons.forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Ativa o selecionado
+                    button.classList.add('active');
+                    const tabContent = document.getElementById(tabId);
+                    if (tabContent) {
+                        tabContent.classList.add('active');
+                    }
+                    
+                    // Carregar arquivos se for a aba uploads
+                    if (tabId === 'uploads') {
+                        loadFilesList();
+                    }
+                });
+            });
+        }
+
+        // =============================
+        // SISTEMA DE MODAIS
+        // =============================
+        function initializeModals() {
+            // Fechar modal clicando fora
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal(modal.id);
+                    }
+                });
+            });
+        }
+
+        // Função para abrir modal
+        function openModal(modalId) {
+            console.log('Abrindo modal:', modalId);
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('active');
+                console.log('Modal aberto com sucesso');
+            } else {
+                console.error('Modal não encontrado:', modalId);
             }
         }
 
-        // Fechar modal clicando fora
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.classList.remove('active');
+        // Função para fechar modal
+        function closeModal(modalId) {
+            console.log('Fechando modal:', modalId);
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('active');
+                
+                // Reset form
+                const form = modal.querySelector('form');
+                if (form) {
+                    form.reset();
+                    const idField = form.querySelector('input[type="hidden"]');
+                    if (idField) idField.value = '';
                 }
-            });
-        });
+                console.log('Modal fechado com sucesso');
+            }
+        }
 
-        // Funções CRUD
+        // =============================
+        // FUNÇÕES CRUD
+        // =============================
+        
+        // Função para deletar item
         async function deleteItem(type, id) {
-            if (!confirm('Tem certeza que deseja excluir este item?')) return;
+            console.log('Deletando item:', type, id);
+            
+            if (!confirm('Tem certeza que deseja excluir este item?')) {
+                return;
+            }
             
             try {
                 const response = await fetch('../api/admin.php', {
@@ -882,18 +943,24 @@ $pages = $pageModel->getAll();
                 });
                 
                 const result = await response.json();
+                console.log('Resultado delete:', result);
+                
                 if (result.success) {
+                    alert('Item excluído com sucesso!');
                     location.reload();
                 } else {
                     alert('Erro ao excluir item: ' + (result.error || 'Erro desconhecido'));
                 }
             } catch (error) {
+                console.error('Erro na requisição:', error);
                 alert('Erro ao excluir item: ' + error.message);
             }
         }
 
-        // Funções de edição
+        // Função para editar usuário
         async function editUser(id) {
+            console.log('Editando usuário:', id);
+            
             try {
                 const response = await fetch('../api/admin.php', {
                     method: 'POST',
@@ -902,6 +969,8 @@ $pages = $pageModel->getAll();
                 });
                 
                 const result = await response.json();
+                console.log('Dados do usuário:', result);
+                
                 if (result.success) {
                     const user = result.data;
                     document.getElementById('userId').value = user.id;
@@ -910,13 +979,19 @@ $pages = $pageModel->getAll();
                     document.getElementById('userRole').value = user.role;
                     document.getElementById('userModalTitle').textContent = 'Editar Usuário';
                     openModal('userModal');
+                } else {
+                    alert('Erro ao carregar dados do usuário');
                 }
             } catch (error) {
+                console.error('Erro:', error);
                 alert('Erro ao carregar dados do usuário');
             }
         }
 
+        // Função para editar curso
         async function editCourse(id) {
+            console.log('Editando curso:', id);
+            
             try {
                 const response = await fetch('../api/admin.php', {
                     method: 'POST',
@@ -925,6 +1000,7 @@ $pages = $pageModel->getAll();
                 });
                 
                 const result = await response.json();
+                
                 if (result.success) {
                     const course = result.data;
                     document.getElementById('courseId').value = course.id;
@@ -932,13 +1008,19 @@ $pages = $pageModel->getAll();
                     document.getElementById('courseDescription').value = course.description;
                     document.getElementById('courseModalTitle').textContent = 'Editar Curso';
                     openModal('courseModal');
+                } else {
+                    alert('Erro ao carregar dados do curso');
                 }
             } catch (error) {
+                console.error('Erro:', error);
                 alert('Erro ao carregar dados do curso');
             }
         }
 
+        // Função para editar aula
         async function editLesson(id) {
+            console.log('Editando aula:', id);
+            
             try {
                 const response = await fetch('../api/admin.php', {
                     method: 'POST',
@@ -947,6 +1029,7 @@ $pages = $pageModel->getAll();
                 });
                 
                 const result = await response.json();
+                
                 if (result.success) {
                     const lesson = result.data;
                     document.getElementById('lessonId').value = lesson.id;
@@ -956,13 +1039,19 @@ $pages = $pageModel->getAll();
                     document.getElementById('lessonOrder').value = lesson.order_number;
                     document.getElementById('lessonModalTitle').textContent = 'Editar Aula';
                     openModal('lessonModal');
+                } else {
+                    alert('Erro ao carregar dados da aula');
                 }
             } catch (error) {
+                console.error('Erro:', error);
                 alert('Erro ao carregar dados da aula');
             }
         }
 
+        // Função para editar página
         async function editPage(id) {
+            console.log('Editando página:', id);
+            
             try {
                 const response = await fetch('../api/admin.php', {
                     method: 'POST',
@@ -971,6 +1060,7 @@ $pages = $pageModel->getAll();
                 });
                 
                 const result = await response.json();
+                
                 if (result.success) {
                     const page = result.data;
                     document.getElementById('pageId').value = page.id;
@@ -979,19 +1069,79 @@ $pages = $pageModel->getAll();
                     document.getElementById('pageContent').value = page.content;
                     document.getElementById('pageModalTitle').textContent = 'Editar Página';
                     openModal('pageModal');
+                } else {
+                    alert('Erro ao carregar dados da página');
                 }
             } catch (error) {
+                console.error('Erro:', error);
                 alert('Erro ao carregar dados da página');
             }
         }
 
-        // Submissão de formulários
-        document.getElementById('userForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
+        // =============================
+        // FORMULÁRIOS
+        // =============================
+        function initializeForms() {
+            // Form de usuário
+            const userForm = document.getElementById('userForm');
+            if (userForm) {
+                userForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await submitForm(userForm, 'user');
+                });
+            }
+
+            // Form de curso
+            const courseForm = document.getElementById('courseForm');
+            if (courseForm) {
+                courseForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await submitForm(courseForm, 'course');
+                });
+            }
+
+            // Form de aula
+            const lessonForm = document.getElementById('lessonForm');
+            if (lessonForm) {
+                lessonForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await submitForm(lessonForm, 'lesson');
+                });
+            }
+
+            // Form de página
+            const pageForm = document.getElementById('pageForm');
+            if (pageForm) {
+                pageForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await submitForm(pageForm, 'page');
+                });
+            }
+
+            // Auto-gerar slug
+            const pageTitle = document.getElementById('pageTitle');
+            const pageSlug = document.getElementById('pageSlug');
+            if (pageTitle && pageSlug) {
+                pageTitle.addEventListener('input', (e) => {
+                    const slug = e.target.value
+                        .toLowerCase()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '')
+                        .replace(/[^a-z0-9\s-]/g, '')
+                        .replace(/\s+/g, '-')
+                        .replace(/-+/g, '-')
+                        .trim();
+                    pageSlug.value = slug;
+                });
+            }
+        }
+
+        // Função para submeter formulários
+        async function submitForm(form, type) {
+            const formData = new FormData(form);
             const isEdit = formData.get('id') !== '';
             
-            formData.append('action', isEdit ? 'update_user' : 'create_user');
+            formData.append('action', isEdit ? `update_${type}` : `create_${type}`);
             
             try {
                 const response = await fetch('../api/admin.php', {
@@ -1000,116 +1150,50 @@ $pages = $pageModel->getAll();
                 });
                 
                 const result = await response.json();
-                if (result.success) {
-                    closeModal('userModal');
-                    location.reload();
-                } else {
-                    alert('Erro ao salvar usuário: ' + (result.error || 'Erro desconhecido'));
-                }
-            } catch (error) {
-                alert('Erro ao salvar usuário: ' + error.message);
-            }
-        });
-
-        document.getElementById('courseForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const isEdit = formData.get('id') !== '';
-            
-            formData.append('action', isEdit ? 'update_course' : 'create_course');
-            
-            try {
-                const response = await fetch('../api/admin.php', {
-                    method: 'POST',
-                    body: formData
-                });
                 
-                const result = await response.json();
                 if (result.success) {
-                    closeModal('courseModal');
+                    alert(isEdit ? 'Item atualizado com sucesso!' : 'Item criado com sucesso!');
+                    closeModal(type + 'Modal');
                     location.reload();
                 } else {
-                    alert('Erro ao salvar curso: ' + (result.error || 'Erro desconhecido'));
+                    alert('Erro ao salvar: ' + (result.error || 'Erro desconhecido'));
                 }
             } catch (error) {
-                alert('Erro ao salvar curso: ' + error.message);
+                console.error('Erro:', error);
+                alert('Erro ao salvar: ' + error.message);
             }
-        });
+        }
 
-        document.getElementById('lessonForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const isEdit = formData.get('id') !== '';
-            
-            formData.append('action', isEdit ? 'update_lesson' : 'create_lesson');
-            
-            try {
-                const response = await fetch('../api/admin.php', {
-                    method: 'POST',
-                    body: formData
+        // =============================
+        // UPLOAD DE ARQUIVOS
+        // =============================
+        function initializeFileUpload() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+
+            if (uploadArea && fileInput) {
+                uploadArea.addEventListener('click', () => fileInput.click());
+
+                uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.add('dragover');
                 });
-                
-                const result = await response.json();
-                if (result.success) {
-                    closeModal('lessonModal');
-                    location.reload();
-                } else {
-                    alert('Erro ao salvar aula: ' + (result.error || 'Erro desconhecido'));
-                }
-            } catch (error) {
-                alert('Erro ao salvar aula: ' + error.message);
-            }
-        });
 
-        document.getElementById('pageForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const isEdit = formData.get('id') !== '';
-            
-            formData.append('action', isEdit ? 'update_page' : 'create_page');
-            
-            try {
-                const response = await fetch('../api/admin.php', {
-                    method: 'POST',
-                    body: formData
+                uploadArea.addEventListener('dragleave', () => {
+                    uploadArea.classList.remove('dragover');
                 });
-                
-                const result = await response.json();
-                if (result.success) {
-                    closeModal('pageModal');
-                    location.reload();
-                } else {
-                    alert('Erro ao salvar página: ' + (result.error || 'Erro desconhecido'));
-                }
-            } catch (error) {
-                alert('Erro ao salvar página: ' + error.message);
+
+                uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.remove('dragover');
+                    handleFiles(e.dataTransfer.files);
+                });
+
+                fileInput.addEventListener('change', (e) => {
+                    handleFiles(e.target.files);
+                });
             }
-        });
-
-        // Upload de arquivos
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-
-        uploadArea.addEventListener('click', () => fileInput.click());
-
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
-
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
-
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            handleFiles(e.dataTransfer.files);
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            handleFiles(e.target.files);
-        });
+        }
 
         function handleFiles(files) {
             const formData = new FormData();
@@ -1127,9 +1211,9 @@ $pages = $pageModel->getAll();
             const progressBar = document.getElementById('progressBar');
             const progressText = document.getElementById('progressText');
             
-            progressDiv.style.display = 'block';
-            progressBar.style.width = '0%';
-            progressText.textContent = 'Enviando...';
+            if (progressDiv) progressDiv.style.display = 'block';
+            if (progressBar) progressBar.style.width = '0%';
+            if (progressText) progressText.textContent = 'Enviando...';
             
             try {
                 const response = await fetch('../api/admin.php', {
@@ -1140,24 +1224,26 @@ $pages = $pageModel->getAll();
                 const result = await response.json();
                 
                 if (result.success) {
-                    progressBar.style.width = '100%';
-                    progressText.textContent = 'Upload concluído!';
+                    if (progressBar) progressBar.style.width = '100%';
+                    if (progressText) progressText.textContent = 'Upload concluído!';
                     
                     setTimeout(() => {
-                        progressDiv.style.display = 'none';
+                        if (progressDiv) progressDiv.style.display = 'none';
                         loadFilesList();
                     }, 1000);
                 } else {
-                    progressText.textContent = 'Erro no upload';
+                    if (progressText) progressText.textContent = 'Erro no upload';
                 }
                 
             } catch (error) {
-                progressText.textContent = 'Erro no upload: ' + error.message;
+                if (progressText) progressText.textContent = 'Erro no upload: ' + error.message;
             }
         }
 
         async function loadFilesList() {
             const filesList = document.getElementById('filesList');
+            if (!filesList) return;
+            
             filesList.innerHTML = '<p style="color: var(--text-muted);">Carregando arquivos...</p>';
             
             try {
@@ -1240,30 +1326,7 @@ $pages = $pageModel->getAll();
             }
         }
 
-        // Auto-gerar slug a partir do título
-        document.getElementById('pageTitle').addEventListener('input', (e) => {
-            const slug = e.target.value
-                .toLowerCase()
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '') // Remove acentos
-                .replace(/[^a-z0-9\s-]/g, '')
-                .replace(/\s+/g, '-')
-                .replace(/-+/g, '-')
-                .trim();
-            document.getElementById('pageSlug').value = slug;
-        });
 
-        // Validação de senha
-        document.getElementById('userPassword').addEventListener('input', (e) => {
-            const password = e.target.value;
-            const isEdit = document.getElementById('userId').value !== '';
-            
-            if (!isEdit && password.length < 6) {
-                e.target.setCustomValidity('A senha deve ter pelo menos 6 caracteres');
-            } else {
-                e.target.setCustomValidity('');
-            }
-        });
     </script>
 </body>
 </html>

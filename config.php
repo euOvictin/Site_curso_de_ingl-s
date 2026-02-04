@@ -17,13 +17,30 @@ $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : '
 $domain = $_SERVER['HTTP_HOST'] ?? 'localhost';
 
 // Determinar BASE_URL corretamente
-// Se o script está em /teste/public/index.php ou /teste/api/login.php, queremos /teste
 $scriptPath = dirname($_SERVER['SCRIPT_NAME']);
-// Remove /public ou /api do final
-$baseUri = preg_replace('#/(public|api)/?$#', '', $scriptPath);
-// Se resultou em string vazia, use apenas '/'
-if (empty($baseUri) || $baseUri === '') {
-    $baseUri = '/teste'; // Caminho padrão para este projeto
+
+// Se estamos acessando via index.php na raiz, ajustar o caminho
+if (basename($_SERVER['SCRIPT_NAME']) === 'index.php' && dirname($_SERVER['SCRIPT_NAME']) !== '/') {
+    $baseUri = dirname($_SERVER['SCRIPT_NAME']);
+} else {
+    // Remove /public ou /api do final para encontrar a raiz do projeto
+    $baseUri = preg_replace('#/(public|api)/?$#', '', $scriptPath);
+}
+
+// Se resultou em string vazia ou apenas '/', usar o diretório atual
+if (empty($baseUri) || $baseUri === '/' || $baseUri === '.') {
+    // Tentar detectar automaticamente baseado na estrutura de pastas
+    $currentDir = basename(dirname($_SERVER['SCRIPT_NAME']));
+    if (in_array($currentDir, ['public', 'api'])) {
+        $baseUri = dirname(dirname($_SERVER['SCRIPT_NAME']));
+    } else {
+        $baseUri = dirname($_SERVER['SCRIPT_NAME']);
+    }
+}
+
+// Garantir que sempre comece com /
+if (!empty($baseUri) && $baseUri[0] !== '/') {
+    $baseUri = '/' . $baseUri;
 }
 
 define('ROOT_PATH', __DIR__);
