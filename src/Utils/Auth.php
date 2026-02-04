@@ -49,7 +49,23 @@ class Auth {
      * Faz logout do usuário
      */
     public function logout() {
-        session_destroy();
+        // Verificar se há uma sessão ativa
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            // Limpar todas as variáveis de sessão
+            $_SESSION = array();
+
+            // Se existe um cookie de sessão, destruí-lo
+            if (ini_get("session.use_cookies")) {
+                $params = session_get_cookie_params();
+                setcookie(session_name(), '', time() - 42000,
+                    $params["path"], $params["domain"],
+                    $params["secure"], $params["httponly"]
+                );
+            }
+
+            // Destruir a sessão
+            session_destroy();
+        }
     }
 
     /**
