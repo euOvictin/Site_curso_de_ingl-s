@@ -1,0 +1,51 @@
+# Arquivos do Sistema Operacional
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Configuração Local
+.env
+config.local.php
+
+# Arquivos Temporários
+*.tmp
+*.log
+*.cache
+temp/
+tmp/
+
+# Dependências (se usar Composer)
+vendor/
+composer.lock
+
+# Uploads (opcional - mantenha .gitkeep)
+public/assets/uploads/*
+!public/assets/uploads/.gitkeep
+
+# IDEs
+.idea
+.vscode
+*.sublime-project
+*.sublime-workspace
+
+# Backup
+*.bak
+*.backup
+*~
+
+# Arquivos de Teste
+phpunit.xml
+.phpunit.result.cache
+coverage/
+
+# Node modules (se usar npm)
+node_modules/
+package-lock.json
+
+# Arquivos do Banco de Dados Locais
+*.db
+*.sqlite
